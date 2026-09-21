@@ -1,0 +1,519 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daniel's todo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ground:#f7f4ea; --ink:#2c3628; --muted:#697365;
+  --head:#5b7351; --head-ink:#fbfaf3; --head-soft:rgba(251,250,243,.72); --track:rgba(251,250,243,.25);
+  --pill:#c7d6be; --pill-ink:#2f4029;
+  --line:#cfd6c4; --box:#7f9274;
+  --amber-bg:#f7e5c2; --amber-line:#e2a93b; --amber-ink:#4a3512;
+  --bar:#fffdf6; --danger:#b4432f; --danger-bg:#f6dcd3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#151a14; --ink:#e6eadf; --muted:#9aa693;
+    --head:#2f4229; --head-ink:#eef1e6; --head-soft:rgba(238,241,230,.7); --track:rgba(238,241,230,.2);
+    --pill:#2a3927; --pill-ink:#d3e0c9;
+    --line:#333f30; --box:#7a9170;
+    --amber-bg:#3a301b; --amber-line:#c9932f; --amber-ink:#f2deb0;
+    --bar:#1b221a; --danger:#ec9a86; --danger-bg:#43231b;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#151a14; --ink:#e6eadf; --muted:#9aa693;
+  --head:#2f4229; --head-ink:#eef1e6; --head-soft:rgba(238,241,230,.7); --track:rgba(238,241,230,.2);
+  --pill:#2a3927; --pill-ink:#d3e0c9;
+  --line:#333f30; --box:#7a9170;
+  --amber-bg:#3a301b; --amber-line:#c9932f; --amber-ink:#f2deb0;
+  --bar:#1b221a; --danger:#ec9a86; --danger-bg:#43231b;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.panel{display:flex;flex-direction:column;gap:28px}
+#p-remind{gap:20px}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:15px; line-height:1.55; word-break:keep-all; overflow-wrap:anywhere;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom, 0px));
+}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--amber-line);outline-offset:2px}
+
+/* header */
+.hd{background:var(--head);color:var(--head-ink)}
+.hd-in{max-width:480px;margin:0 auto;padding:22px 20px 20px}
+.app-name{font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--head-soft);margin:0 0 10px}
+.hd h1{font-size:26px;line-height:1.25;font-weight:700;margin:0;text-wrap:balance}
+.hd p.sub{margin:6px 0 0;font-size:13px;font-weight:500;color:var(--head-soft)}
+.prog{display:flex;align-items:center;gap:10px;margin-top:16px}
+.prog-track{flex:1;height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.prog-fill{display:block;height:100%;width:0;background:var(--head-ink);border-radius:3px;transition:width .25s}
+.prog-num{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;min-width:3.4em;text-align:right}
+
+/* body */
+main{max-width:480px;margin:0 auto;padding:24px 20px 8px;display:flex;flex-direction:column;gap:28px}
+.sec{display:flex;flex-direction:column;gap:6px}
+.pill{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  background:var(--pill);color:var(--pill-ink);border-radius:12px;padding:10px 14px;margin-bottom:6px;
+}
+.pill h2{font-size:15px;font-weight:700;margin:0;line-height:1.4}
+.pill .n{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.row{display:flex;align-items:flex-start;gap:8px}
+.row.sub{margin-left:28px}
+.row label{flex:1;display:flex;gap:10px;align-items:flex-start;padding:8px 2px;min-height:44px;cursor:pointer}
+.row input{
+  appearance:none;-webkit-appearance:none;flex:none;margin:1px 0 0;
+  width:22px;height:22px;border:2px solid var(--box);border-radius:6px;background:transparent;cursor:pointer;
+  display:grid;place-content:center;
+}
+.row input::after{
+  content:"";width:11px;height:6px;border-left:2.5px solid var(--head-ink);border-bottom:2.5px solid var(--head-ink);
+  transform:rotate(-45deg) translate(1px,-1px) scale(0);transition:transform .12s;
+}
+.row input:checked{background:var(--head);border-color:var(--head)}
+.row input:checked::after{transform:rotate(-45deg) translate(1px,-1px) scale(1)}
+.row input:checked + span{color:var(--muted)}
+.row strong{font-weight:700}
+
+.chip{
+  flex:none;margin-top:8px;display:inline-flex;align-items:center;gap:5px;
+  border:1px solid var(--amber-line);background:var(--amber-bg);color:var(--amber-ink);
+  border-radius:999px;padding:3px 10px 3px 8px;font-size:12px;font-weight:700;cursor:pointer;
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.chip svg{width:13px;height:13px}
+.chip.late{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+
+.note{
+  background:var(--amber-bg);color:var(--amber-ink);border:1.5px solid var(--amber-line);
+  border-radius:12px;padding:14px 16px;font-weight:500;
+}
+.note.q{font-weight:700;font-size:16px;line-height:1.6}
+.note small{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:6px;color:var(--amber-ink);opacity:.8}
+.quote{border-left:3px solid var(--box);padding:2px 0 2px 14px;color:var(--muted);font-size:14px;margin:4px 0 0}
+.lead{margin:0;font-weight:700}
+
+.reset{
+  align-self:center;background:none;border:1.5px solid var(--line);color:var(--muted);
+  border-radius:999px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;
+}
+
+/* reminders */
+.rem{border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.rem.due{border-color:var(--amber-line);background:var(--amber-bg);color:var(--amber-ink)}
+.rem.late{border-color:var(--danger)}
+.rem-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.rem h3{margin:0;font-size:16px;font-weight:700}
+.rem .every{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.rem.due .every{color:inherit;opacity:.8}
+.rem .status{margin:0;font-size:14px;font-variant-numeric:tabular-nums}
+.rem .status b{font-weight:700}
+.rem.late .status b{color:var(--danger)}
+.rem-act{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{
+  border:0;background:var(--head);color:var(--head-ink);border-radius:10px;padding:9px 16px;
+  font-weight:700;font-size:14px;cursor:pointer;min-height:40px;
+}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted);font-weight:500}
+.rem.due .btn.ghost{border-color:var(--amber-line);color:var(--amber-ink)}
+.fld{
+  border:1.5px solid var(--line);background:transparent;border-radius:10px;padding:8px 10px;min-height:40px;
+}
+.fld option{color:#222;background:#fff}
+.add{display:flex;flex-direction:column;gap:10px}
+.add .r{display:flex;gap:8px;flex-wrap:wrap}
+.add input.fld{flex:1 1 180px;min-width:0}
+.hint{margin:0;font-size:13px;color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:16px 0}
+
+.dueban{display:flex;flex-direction:column;gap:8px}
+.dueban .note{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px 10px 16px}
+.dueban .note span{font-weight:700}
+
+/* tab bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bar);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom, 0px)}
+.bar-in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.tab{
+  background:none;border:0;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;position:relative;min-height:56px;
+}
+.tab svg{width:22px;height:22px}
+.tab[aria-selected="true"]{color:var(--head);font-weight:700}
+:root[data-theme="dark"] .tab[aria-selected="true"]{color:#a9c79b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tab[aria-selected="true"]{color:#a9c79b}}
+.tab[aria-selected="true"]::before{content:"";position:absolute;top:0;left:28%;right:28%;height:3px;border-radius:0 0 3px 3px;background:currentColor}
+.badge{
+  position:absolute;top:5px;left:calc(50% + 6px);min-width:17px;height:17px;border-radius:9px;padding:0 5px;
+  background:var(--danger);color:var(--bar);font-size:11px;font-weight:700;line-height:17px;text-align:center;
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<header class="hd">
+  <div class="hd-in">
+    <p class="app-name">DANIEL'S TODO</p>
+    <h1 id="hd-title"></h1>
+    <p class="sub" id="hd-sub"></p>
+    <div class="prog" id="prog">
+      <div class="prog-track"><span class="prog-fill" id="prog-fill"></span></div>
+      <span class="prog-num" id="prog-num"></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="p-morning" role="tabpanel" aria-labelledby="t-morning" class="panel"></section>
+  <section id="p-detail" role="tabpanel" aria-labelledby="t-detail" class="panel" hidden></section>
+  <section id="p-remind" role="tabpanel" aria-labelledby="t-remind" class="panel" hidden></section>
+</main>
+
+<nav class="bar" aria-label="Daniel's todo">
+  <div class="bar-in" role="tablist">
+    <button class="tab" id="t-morning" role="tab" aria-selected="true" data-tab="morning">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="14" r="4"/><path d="M12 4v2M4.9 8.9l1.4 1.4M19.1 8.9l-1.4 1.4M2 18h20"/></svg>
+      아침 체크
+    </button>
+    <button class="tab" id="t-detail" role="tab" aria-selected="false" data-tab="detail">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg>
+      자기관리
+    </button>
+    <button class="tab" id="t-remind" role="tab" aria-selected="false" data-tab="remind">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 21h4"/></svg>
+      리마인더
+      <span class="badge" id="badge" hidden></span>
+    </button>
+  </div>
+</nav>
+
+<script>
+/* ---------- content ---------- */
+const MORNING = [
+  { id:'decide', title:'결정을 할 때', items:[
+    '상대방은 무엇을 해야 하는가?',
+    '내 결정으로 인해 상대방에게 얼마나 많은 시간과 노력이 필요한가?',
+    '내가 빠뜨린 것이 없는가?',
+    '예상하지 못한 상황은 무엇인가?',
+    '다른 사람이 내 실수를 수습해야 하는 상황은 없는가?',
+    '지금 선택이 정말 가장 합리적인가?'
+  ]},
+  { id:'look', title:'외모·자세', items:[
+    '머리/얼굴 정리했나?',
+    '옷에 얼룩이나 냄새가 없나?',
+    '늘어진 옷을 입고 있지는 않나?',
+    '옷차림이 상황에 맞나?',
+    '자세를 펴고 있나?'
+  ]},
+  { id:'bag', title:'소지품', items:[
+    '휴대폰',
+    '지갑 — 필요한 것만 들어 있나?',
+    '열쇠',
+    '필요한 물건은 **주머니가 아니라 가방**에 넣었나?',
+    '쓰레기나 불필요한 물건을 들고 나가고 있지는 않나?'
+  ]},
+  { id:'room', title:'방·생활', items:[
+    '쓰레기를 바로 버렸나?',
+    '사용한 물건을 제자리에 놓았나?',
+    '불/전기/물 확인했나?',
+    '놓고 가는 물건은 없나?'
+  ]},
+  { id:'mind', title:'오늘의 태도', items:[
+    '**사람이 말하면 대답한다.**',
+    '**질문을 받으면 핵심부터 대답한다.**',
+    '**상대방에게 같은 말을 반복하게 만들지 않는다.**',
+    '**내 입장을 구구절절 설명하지 않는다.**',
+    '**내가 말하고 싶은 것보다 상대방이 알아야 할 것을 먼저 말한다.**',
+    '**오늘은 상대방 입장에서 한 번 더 생각하고 행동한다.**'
+  ]}
+];
+
+const DETAIL = [
+  { id:'talk', title:'대화와 배려', items:[
+    '다른 사람의 말을 끝까지 듣고, **내 생각만 중심으로 행동하지 않는다.**',
+    '상대방이 질문하거나 물어본 것에는 **반드시 대답한다.**',
+    '같은 질문을 여러 번 하게 만들지 않는다.',
+    '내가 상대방에게 설명하는 데 필요한 정리와 노력을 먼저 한다.',
+    '상대방이 내 말을 이해하기 위해 **extra effort를 들이지 않아도 되도록** 말한다.',
+    '배려하는 척하면서 실제로는 내 입장만 중심으로 생각하고 있지는 않은지 점검한다.',
+    '상대방과 이야기할 때는 **핵심만 이야기한다.**',
+    '구구절절 내가 무엇을 생각했고 무엇을 했는지 설명하지 않는다.',
+    '상대방이 알 필요 없는 **내 입장, 자기합리화, 부연 설명은 덧붙이지 않는다.**',
+    '설명할 때는 내가 먼저 내용을 정리해서 **깔끔하고 구체적으로** 전달한다.',
+    '거짓말하지 않는다.'
+  ]},
+  { id:'money', title:'돈·정산 관련 대화', items:[
+    '상대방이 질문한 내용에 먼저 정확하게 대답한다.',
+    '내가 이미 일부를 처리했더라도, 상대방에게 필요한 **핵심 정보부터 전달한다.**',
+    '불필요하게 내가 왜 그렇게 했는지 장황하게 설명하지 않는다.',
+    '예: 상대방이 “숙소 비용 반틈 더 낼게”라고 했으면 → **현재 총액과 추가로 필요한 금액만 명확하게 말한다.**',
+    '뒤에서 내가 처리할 수 있는 부분은 내가 처리하고, 상대방에게 불필요한 부담을 넘기지 않는다.'
+  ], quote:'미안해, 내가 완전 깜빡했네! 리마인드 해줘서 고마워. 새로운 에어비앤비는 $672이라서 $XX 더 내주면 돼.' },
+  { id:'wash', title:'세탁·청결', items:[
+    '수건 → **HOT**',
+    '그 외 빨래 → **WARM**',
+    '옷과 베갯잇은 한 번씩 **옥시클린에 30분 담가둔다.**',
+    '빨래할 때 **옥시클린 + 세제**를 넣고 돌린다.',
+    { t:'이불은 **2주에 한 번** 세탁한다.', remind:'duvet' },
+    '늘어진 옷은 밖에서 입지 않는다.',
+    '쓰레기는 바로바로 쓰레기통에 넣는다.'
+  ]},
+  { id:'stuff', title:'소지품 관리', items:[
+    '주머니에 물건을 넣지 않고 **가방에 넣는다.**',
+    '지갑에는 **필요한 것만** 넣고 다닌다.'
+  ]},
+  { id:'meal', title:'식사 예절', items:[ '밥 먹을 때 코를 풀지 않는다.' ]},
+  { id:'habit', title:'생활 습관', items:[
+    '목을 깊숙이 파묻고 핸드폰을 보지 않는다.',
+    '핸드폰을 볼 때는 **한곳에 서서** 본다.',
+    '걸을 때 팔을 자연스럽게 흔든다.',
+    '허리를 펴고 바른 자세를 유지한다.',
+    '컴퓨터를 할 때 자세를 바르게 한다.'
+  ]},
+  { id:'promise', title:'약속과 책임', items:[
+    '약속했으면 **처음 약속한 대로 한다.**',
+    { t:'부득이하게 약속을 지킬 수 없게 되면:', sub:[
+      '상황을 자세히 설명한다.',
+      '상대방이 이해할 수 있도록 정리해서 말한다.',
+      '가능한 **다른 option을 함께 제시한다.**'
+    ]},
+    '내가 할 수 있는 일은 상대방에게 떠넘기지 않고 스스로 처리한다.'
+  ]},
+  { id:'core', title:'핵심 원칙', items:[
+    '**듣고 → 이해하고 → 핵심을 정리하고 → 정확하게 대답한다.**',
+    '**내가 말하고 싶은 것보다 상대방이 알아야 하는 것을 먼저 말한다.**',
+    '**상대방이 나를 이해하기 위해 추가적인 노력을 하지 않아도 되게 한다.**',
+    '**설명은 짧게, 명확하게, 필요한 디테일까지.**',
+    '**자기합리화보다 책임과 해결책을 먼저 제시한다.**'
+  ]}
+];
+
+const EVERY = [[1,'매일'],[3,'3일마다'],[7,'매주'],[14,'2주마다'],[30,'매달'],[60,'2달마다'],[90,'3달마다']];
+const everyLabel = n => (EVERY.find(e => e[0] === n) || [n, n + '일마다'])[1];
+
+/* ---------- state ---------- */
+const KEY = 'daniels-todo.v1';
+let mem = null;
+const load = () => { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return mem; } };
+const persist = () => { mem = state; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const today = () => ymd(new Date());
+const dayNum = s => { const [y, m, d] = s.split('-').map(Number); return Math.round(new Date(y, m - 1, d).getTime() / 864e5); };
+
+let state = load() || {};
+state.morning = state.morning || { date: today(), c: {} };
+state.detail = state.detail || { c: {} };
+state.rem = state.rem || [{ id:'duvet', title:'이불 세탁', every:14, last:null }];
+if (state.morning.date !== today()) state.morning = { date: today(), c: {} };
+persist();
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function rich(parent, s) {
+  s.split(/\*\*(.+?)\*\*/).forEach((part, i) => {
+    if (!part) return;
+    if (i % 2) parent.appendChild(el('strong', null, part)); else parent.appendChild(document.createTextNode(part));
+  });
+}
+const BELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 21h4"/></svg>';
+
+function remStatus(r) {
+  if (!r.last) return { due:true, late:false, text:'아직 기록이 없어요 — 하고 나면 “했어요”를 눌러주세요', short:'지금', n:0 };
+  const since = dayNum(today()) - dayNum(r.last);
+  const left = r.every - since;
+  const nextD = new Date((dayNum(r.last) + r.every) * 864e5 + 12 * 36e5);
+  const md = (nextD.getMonth() + 1) + '/' + nextD.getDate();
+  if (left > 0) return { due:false, late:false, text:'다음 ' + md + ' · ' + left + '일 남음', short:'D-' + left, n:left };
+  if (left === 0) return { due:true, late:false, text:'오늘 해야 해요', short:'오늘', n:0 };
+  return { due:true, late:true, text:(-left) + '일 지났어요', short:(-left) + '일 지남', n:left };
+}
+const dueList = () => state.rem.filter(r => remStatus(r).due);
+
+/* ---------- checklist rendering ---------- */
+function buildList(root, data, store, prefix) {
+  root.textContent = '';
+  data.forEach((sec, si) => {
+    const s = el('div', 'sec');
+    const pill = el('div', 'pill');
+    pill.appendChild(el('h2', null, sec.title));
+    const n = el('span', 'n'); n.dataset.sec = prefix + si; pill.appendChild(n);
+    s.appendChild(pill);
+    sec.items.forEach((raw, ii) => {
+      const it = typeof raw === 'string' ? { t: raw } : raw;
+      s.appendChild(row(it.t, prefix + si + '-' + ii, store, false, it.remind));
+      (it.sub || []).forEach((t, k) => s.appendChild(row(t, prefix + si + '-' + ii + '-' + k, store, true)));
+    });
+    if (sec.quote) { const q = el('p', 'quote'); q.textContent = sec.quote; s.appendChild(q); }
+    root.appendChild(s);
+  });
+}
+function row(text, id, store, sub, remindId) {
+  const r = el('div', 'row' + (sub ? ' sub' : ''));
+  const lab = el('label');
+  const cb = el('input'); cb.type = 'checkbox'; cb.id = 'c-' + id; cb.checked = !!store.c[id];
+  cb.addEventListener('change', () => { if (cb.checked) store.c[id] = 1; else delete store.c[id]; persist(); counts(); });
+  const sp = el('span'); rich(sp, text);
+  lab.append(cb, sp); r.appendChild(lab);
+  if (remindId) {
+    const chip = el('button', 'chip'); chip.type = 'button'; chip.dataset.remind = remindId;
+    chip.addEventListener('click', () => show('remind'));
+    r.appendChild(chip);
+  }
+  return r;
+}
+function tally(data, store, prefix) {
+  let done = 0, total = 0;
+  data.forEach((sec, si) => {
+    let d = 0, t = 0;
+    sec.items.forEach((raw, ii) => {
+      const it = typeof raw === 'string' ? { t: raw } : raw;
+      t++; if (store.c[prefix + si + '-' + ii]) d++;
+      (it.sub || []).forEach((_, k) => { t++; if (store.c[prefix + si + '-' + ii + '-' + k]) d++; });
+    });
+    const n = document.querySelector('[data-sec="' + prefix + si + '"]');
+    if (n) n.textContent = d + ' / ' + t;
+    done += d; total += t;
+  });
+  return { done, total };
+}
+let tabNow = 'morning';
+function counts() {
+  const m = tally(MORNING, state.morning, 'm'), d = tally(DETAIL, state.detail, 'd');
+  const cur = tabNow === 'morning' ? m : tabNow === 'detail' ? d : null;
+  $('prog').hidden = !cur;
+  if (cur) {
+    $('prog-fill').style.width = (cur.total ? cur.done / cur.total * 100 : 0) + '%';
+    $('prog-num').textContent = cur.done + ' / ' + cur.total;
+  }
+  document.querySelectorAll('.chip[data-remind]').forEach(c => {
+    const r = state.rem.find(x => x.id === c.dataset.remind);
+    if (!r) { c.hidden = true; return; }
+    const st = remStatus(r);
+    c.hidden = false; c.className = 'chip' + (st.late ? ' late' : '');
+    c.innerHTML = BELL; c.appendChild(document.createTextNode(st.short));
+    c.setAttribute('aria-label', r.title + ' 리마인더: ' + st.text);
+  });
+  const nDue = dueList().length;
+  $('badge').hidden = !nDue; $('badge').textContent = nDue;
+}
+
+/* ---------- morning panel ---------- */
+function renderMorning() {
+  const p = $('p-morning'); p.textContent = '';
+  const due = el('div', 'dueban'); due.id = 'dueban'; p.appendChild(due);
+
+  const pledge = el('div', 'note q');
+  pledge.appendChild(el('small', null, '명심문'));
+  pledge.appendChild(document.createTextNode('내가 충분히 준비하고 확인하지 않아 가족과 친구들이 내 일을 대신하며 시간, 돈, 체력을 쓰고 고생하게 되었다. 나의 실수가 결국 다른 사람들의 부담이 되었다. 앞으로는 “내가 빠뜨리면 누가 고생하는가?”를 먼저 생각하고, 내 일을 다른 사람이 수습하게 만들지 않겠다.'));
+  p.appendChild(pledge);
+  p.appendChild(el('p', 'lead', '매일 나가기 전에 이것만 빠르게 확인하기'));
+
+  const list = el('div'); list.style.cssText = 'display:flex;flex-direction:column;gap:28px';
+  buildList(list, MORNING, state.morning, 'm'); p.appendChild(list);
+
+  const last = el('div', 'note q');
+  last.appendChild(el('small', null, '나가기 직전 한마디'));
+  last.appendChild(document.createTextNode('“듣고 → 대답하고 → 핵심만 말하고 → 내가 할 일은 내가 한다.”'));
+  p.appendChild(last);
+
+  const rs = el('button', 'reset', '오늘 체크 모두 지우기'); rs.type = 'button'; rs.id = 'reset-morning';
+  rs.addEventListener('click', () => { state.morning = { date: today(), c: {} }; persist(); renderMorning(); counts(); dueBanner(); });
+  p.appendChild(rs);
+  dueBanner();
+}
+function dueBanner() {
+  const box = $('dueban'); if (!box) return;
+  box.textContent = '';
+  dueList().forEach(r => {
+    const n = el('div', 'note');
+    const t = el('span', null, r.title + ' · ' + remStatus(r).short);
+    const b = el('button', 'btn', '했어요'); b.type = 'button';
+    b.addEventListener('click', () => markDone(r.id));
+    n.append(t, b); box.appendChild(n);
+  });
+}
+
+/* ---------- detail panel ---------- */
+function renderDetail() {
+  const p = $('p-detail'); p.textContent = '';
+  const list = el('div'); list.style.cssText = 'display:flex;flex-direction:column;gap:28px';
+  buildList(list, DETAIL, state.detail, 'd'); p.appendChild(list);
+  const rs = el('button', 'reset', '체크 모두 지우기'); rs.type = 'button'; rs.id = 'reset-detail';
+  rs.addEventListener('click', () => { state.detail = { c: {} }; persist(); renderDetail(); counts(); });
+  p.appendChild(rs);
+}
+
+/* ---------- reminders panel ---------- */
+function markDone(id) {
+  const r = state.rem.find(x => x.id === id); if (!r) return;
+  r.last = today(); persist(); renderRemind(); counts(); dueBanner();
+}
+function renderRemind() {
+  const p = $('p-remind'); p.textContent = '';
+  p.appendChild(el('p', 'hint', '주기가 있는 일은 여기서 관리해요. 기한이 되면 아침 체크 맨 위와 탭 배지에 표시됩니다. 이 앱을 열 때 알려주는 방식이에요.'));
+
+  const sorted = [...state.rem].sort((a, b) => remStatus(a).n - remStatus(b).n);
+  if (!sorted.length) p.appendChild(el('p', 'empty', '리마인더가 없어요. 아래에서 추가하세요.'));
+  sorted.forEach(r => {
+    const st = remStatus(r);
+    const c = el('div', 'rem' + (st.due ? ' due' : '') + (st.late ? ' late' : ''));
+    const top = el('div', 'rem-top');
+    top.append(el('h3', null, r.title), el('span', 'every', everyLabel(r.every)));
+    const s = el('p', 'status'); const b = el('b', null, st.text); s.appendChild(b);
+    if (r.last) s.appendChild(document.createTextNode('  ·  마지막 ' + r.last.slice(5).replace('-', '/')));
+    const act = el('div', 'rem-act');
+    const done = el('button', 'btn', '했어요'); done.type = 'button';
+    done.addEventListener('click', () => markDone(r.id));
+    const sel = el('select', 'fld'); sel.id = 'every-' + r.id; sel.setAttribute('aria-label', r.title + ' 주기');
+    const opts = EVERY.some(e => e[0] === r.every) ? EVERY : [...EVERY, [r.every, r.every + '일마다']];
+    opts.forEach(([n, l]) => { const o = el('option', null, l); o.value = n; if (n === r.every) o.selected = true; sel.appendChild(o); });
+    sel.addEventListener('change', () => { r.every = Number(sel.value); persist(); renderRemind(); counts(); dueBanner(); });
+    const del = el('button', 'btn ghost', '삭제'); del.type = 'button';
+    del.addEventListener('click', () => { state.rem = state.rem.filter(x => x.id !== r.id); persist(); renderRemind(); counts(); dueBanner(); });
+    act.append(done, sel, del);
+    c.append(top, s, act); p.appendChild(c);
+  });
+
+  const pill = el('div', 'pill'); pill.appendChild(el('h2', null, '새 리마인더'));
+  const add = el('form', 'add');
+  const inp = el('input', 'fld'); inp.id = 'new-title'; inp.placeholder = '예: 침대 시트 교체'; inp.setAttribute('aria-label', '리마인더 이름'); inp.required = true;
+  const sel = el('select', 'fld'); sel.id = 'new-every'; sel.setAttribute('aria-label', '주기');
+  EVERY.forEach(([n, l]) => { const o = el('option', null, l); o.value = n; if (n === 14) o.selected = true; sel.appendChild(o); });
+  const btn = el('button', 'btn', '추가'); btn.type = 'submit';
+  const r1 = el('div', 'r'); r1.append(inp, sel, btn); add.appendChild(r1);
+  add.addEventListener('submit', e => {
+    e.preventDefault();
+    const t = inp.value.trim(); if (!t) return;
+    state.rem.push({ id:'r' + Date.now(), title:t, every:Number(sel.value), last:today() });
+    persist(); renderRemind(); counts(); dueBanner();
+  });
+  p.append(pill, add);
+}
+
+/* ---------- tabs ---------- */
+const META = {
+  morning: () => ['외출 전 1분 체크', new Date().toLocaleDateString('ko-KR', { month:'long', day:'numeric', weekday:'short' })],
+  detail:  () => ['자기관리 체크리스트', '평소에 지켜야 할 것들 — 아침 체크의 자세한 버전'],
+  remind:  () => ['리마인더', '주기가 있는 일을 놓치지 않게']
+};
+const PANEL = { morning:'p-morning', detail:'p-detail', remind:'p-remind' };
+function show(name) {
+  tabNow = name;
+  Object.keys(PANEL).forEach(k => { $(PANEL[k]).hidden = k !== name; $('t-' + k).setAttribute('aria-selected', String(k === name)); });
+  const [t, s] = META[name](); $('hd-title').textContent = t; $('hd-sub').textContent = s;
+  if (name === 'remind') renderRemind();
+  if (name === 'morning') dueBanner();
+  counts(); window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => show(b.dataset.tab)));
+
+renderMorning(); renderDetail(); show('morning');
+</script>
